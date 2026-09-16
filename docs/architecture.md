@@ -65,7 +65,7 @@ enforces this; adding it again returns `409 Conflict`.
 | Endpoint | Purpose |
 |----------|---------|
 | `POST /api/auth/register` · `login` · `logout`, `GET /api/auth/me` | Authentication |
-| `GET /api/pokemon` | List catalog (all non-deprecated Pokémon) |
+| `GET /api/pokemon` | List catalog (all Pokémon, deprecated ones flagged) |
 | `GET /api/collection` | List own collection |
 | `POST /api/collection` `{ pokemonId }` | Add a Pokémon to own collection |
 
@@ -129,7 +129,8 @@ new Pokémon and updates existing ones.
 - Pokémon that disappear from PokéAPI are marked `deprecated`, never deleted. `catalog` doesn't depend on
   `collection`, so it can't know whether a Pokémon is in use. It therefore deprecates every removed Pokémon.
 - The `deprecated` flag lives only in `catalog`. Collection entries read it from there instead of keeping a copy.
-  Entries stay visible and are shown as deprecated. Deprecated Pokémon can't be added anymore.
+  Deprecated Pokémon stay visible in the catalog and in collections and are marked as deprecated in the UI. They
+  can't be added anymore.
 - The sync never mass-deprecates: if PokéAPI returns an empty or implausibly short list, the deprecation step is
   skipped.
 

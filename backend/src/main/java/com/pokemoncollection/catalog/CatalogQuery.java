@@ -9,8 +9,8 @@ import java.util.Optional;
  */
 public interface CatalogQuery {
 
-    /** All Pokémon that are not deprecated, ordered by id. */
-    List<PokemonView> findAllActive();
+    /** All Pokémon including deprecated ones, ordered by id. */
+    List<PokemonView> findAll();
 
     /** A Pokémon by id, including deprecated ones. */
     Optional<PokemonView> findById(int id);

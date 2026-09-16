@@ -70,11 +70,14 @@ class CollectionIntegrationTest extends IntegrationTest {
     }
 
     @Test
-    void catalogExcludesDeprecatedPokemon() throws Exception {
+    void catalogIncludesDeprecatedPokemonFlagged() throws Exception {
         mockMvc.perform(get("/api/pokemon").session(registerTrainer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].name").value("pikachu"));
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(PIKACHU))
+                .andExpect(jsonPath("$[0].deprecated").value(false))
+                .andExpect(jsonPath("$[1].id").value(MISSINGNO))
+                .andExpect(jsonPath("$[1].deprecated").value(true));
     }
 
     @Test

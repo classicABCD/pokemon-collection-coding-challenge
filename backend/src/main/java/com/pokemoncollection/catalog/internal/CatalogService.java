@@ -5,6 +5,7 @@ import com.pokemoncollection.catalog.PokemonView;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +20,8 @@ class CatalogService implements CatalogQuery {
     }
 
     @Override
-    public List<PokemonView> findAllActive() {
-        return pokemon.findAllByDeprecatedFalseOrderByIdAsc().stream().map(Pokemon::toView).toList();
+    public List<PokemonView> findAll() {
+        return pokemon.findAll(Sort.by("id")).stream().map(Pokemon::toView).toList();
     }
 
     @Override

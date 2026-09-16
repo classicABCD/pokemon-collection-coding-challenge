@@ -3,14 +3,7 @@ info:
   title: Pokémon Collection API
   version: 1.0.0
   description: |
-    Contract between frontend and backend (specification first).
-
-    **Authentication:** session cookie (`JSESSIONID`), set by `login` or `register`.
-
-    **CSRF:** every state-changing request (`POST`) must send the value of the `XSRF-TOKEN` cookie
-    as the `X-XSRF-TOKEN` header. The cookie is issued on the first response (e.g. `GET /api/auth/me`).
-
-    **Data isolation:** the trainer is always taken from the session. No endpoint accepts a trainer id.
+    The contract between frontend and backend.
 servers:
   - url: /
 tags:
@@ -114,8 +107,10 @@ paths:
     get:
       tags: [catalog]
       operationId: listPokemon
-      summary: List all non-deprecated Pokémon
-      description: Returns the complete catalog. Filtering and sorting happen in the frontend.
+      summary: List all Pokémon, including deprecated ones
+      description: |
+        Returns the complete catalog. Deprecated Pokémon are included and flagged with `deprecated = true`;
+        they cannot be added to a collection. Filtering and sorting happen in the frontend.
       responses:
         '200':
           description: Catalog
