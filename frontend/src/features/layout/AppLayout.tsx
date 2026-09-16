@@ -1,7 +1,9 @@
 import { AppShell, Button, Container, Group, Text, Title } from '@mantine/core';
 import { NavLink, Outlet, useNavigate } from 'react-router';
+import { errorMessage, errorStatus } from '../../api/apiError.util';
 import { useLogoutMutation } from '../../api/pokemonApi';
 import { useCurrentTrainer } from '../auth/useCurrentTrainer.hook';
+import { notifyError } from '../notification/notification.util';
 import { APP_TITLE, NAVIGATION } from './layout.const';
 
 export const AppLayout = () => {
@@ -9,12 +11,20 @@ export const AppLayout = () => {
   const [logout, { isLoading }] = useLogoutMutation();
   const navigate = useNavigate();
 
-  // The logout endpoint resets the cache on success (see pokemonApi.ts)
-  const handleLogout = () =>
-    logout()
-      .unwrap()
-      .then(() => navigate('/login', { replace: true }))
-      .catch(() => undefined);
+  // The logout endpoint resets the cache (see pokemonApi.ts)
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      if (errorStatus(error) === 401) {
+        // Session had already expired: the trainer is logged out anyway
+        navigate('/login', { replace: true });
+      } else {
+        notifyError(errorMessage(error));
+      }
+    }
+  };
 
   return (
     <AppShell header={{ height: 60 }} padding="md">

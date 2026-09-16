@@ -11,5 +11,3 @@ export const store = configureStore({
 
 // Enables refetchOnFocus / refetchOnReconnect configured in baseApi
 setupListeners(store.dispatch);
-
-export type AppDispatch = typeof store.dispatch;

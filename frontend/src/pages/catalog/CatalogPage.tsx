@@ -1,8 +1,9 @@
 import { Alert, Center, Group, Loader, Stack, Text, Title } from '@mantine/core';
 import { useMemo } from 'react';
 import { QUERY_OPTIONS } from '../../api/api.const';
-import { errorMessage } from '../../api/errorMessage.util';
+import { errorMessage } from '../../api/apiError.util';
 import { useAddToCollectionMutation, useListCollectionQuery, useListPokemonQuery } from '../../api/pokemonApi';
+import { notifyError } from '../../features/notification/notification.util';
 import { PokemonCard } from '../../features/pokemon/PokemonCard';
 import { PokemonFilterBar } from '../../features/pokemon/PokemonFilterBar';
 import { PokemonGrid } from '../../features/pokemon/PokemonGrid';
@@ -41,11 +42,6 @@ export const CatalogPage = () => {
       </Group>
 
       {error && <Alert color="red">{errorMessage(error)}</Alert>}
-      {addState.isError && (
-        <Alert color="red" withCloseButton onClose={() => addState.reset()}>
-          {errorMessage(addState.error)}
-        </Alert>
-      )}
 
       {!error && catalog.length === 0 ? (
         // First sync still running after startup; polling picks up the data once it is there
@@ -73,7 +69,11 @@ export const CatalogPage = () => {
                 pokemon={pokemon}
                 owned={ownedIds.has(pokemon.id)}
                 adding={addingId === pokemon.id}
-                onAdd={(pokemonId) => addToCollection({ addToCollectionRequest: { pokemonId } })}
+                onAdd={(pokemonId) =>
+                  addToCollection({ addToCollectionRequest: { pokemonId } })
+                    .unwrap()
+                    .catch((addError: unknown) => notifyError(errorMessage(addError)))
+                }
               />
             )}
           />

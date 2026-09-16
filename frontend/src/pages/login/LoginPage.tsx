@@ -1,6 +1,6 @@
 import { Center, Loader } from '@mantine/core';
 import { Navigate } from 'react-router';
-import { LoginForm } from '../../features/auth/LoginForm';
+import { AuthPanel } from '../../features/auth/AuthPanel';
 import { useCurrentTrainer } from '../../features/auth/useCurrentTrainer.hook';
 
 export const LoginPage = () => {
@@ -20,7 +20,7 @@ export const LoginPage = () => {
   }
   return (
     <Center h="100vh" p="md">
-      <LoginForm />
+      <AuthPanel />
     </Center>
   );
 };

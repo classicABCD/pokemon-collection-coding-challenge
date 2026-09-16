@@ -2,7 +2,7 @@ import { Alert, Anchor, Center, Group, Loader, Stack, Text, Title } from '@manti
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { QUERY_OPTIONS } from '../../api/api.const';
-import { errorMessage } from '../../api/errorMessage.util';
+import { errorMessage } from '../../api/apiError.util';
 import { useListCollectionQuery } from '../../api/pokemonApi';
 import { PokemonCard } from '../../features/pokemon/PokemonCard';
 import { PokemonFilterBar } from '../../features/pokemon/PokemonFilterBar';

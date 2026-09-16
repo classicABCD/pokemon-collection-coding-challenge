@@ -15,3 +15,13 @@ export const SESSION_ENDPOINTS: readonly string[] = ['getCurrentTrainer', 'login
 
 export const XSRF_COOKIE = 'XSRF-TOKEN';
 export const XSRF_HEADER = 'X-XSRF-TOKEN';
+
+/** Answered by the reverse proxy (nginx / Vite) when the backend is down. */
+export const GATEWAY_STATUSES: readonly number[] = [502, 503, 504];
+
+export const ERROR_MESSAGES = {
+  serverUnreachable: 'The server is not reachable. Please check your connection and try again.',
+  serverError: 'Something went wrong on the server. Please try again later.',
+  forbidden: 'Your security token is missing or outdated. Please reload the page.',
+  unexpected: 'Something went wrong. Please try again.',
+} as const;

@@ -4,7 +4,7 @@ import { afterEach } from 'vitest';
 
 afterEach(() => cleanup());
 
-// Mantine uses matchMedia and ResizeObserver, which jsdom does not provide
+// Mantine uses matchMedia, which jsdom does not provide
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({
@@ -18,10 +18,3 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 });
-
-class ResizeObserverStub {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-window.ResizeObserver = ResizeObserverStub;
