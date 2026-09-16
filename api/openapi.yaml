@@ -79,13 +79,16 @@ paths:
       tags: [auth]
       operationId: logout
       summary: End the current session
+      # 401/403 are written as problem details by the security filter chain, before the controller is reached.
+      # No content type is declared here: otherwise the generated mapping would only produce application/problem+json
+      # and reject clients sending "Accept: application/json" with 406.
       responses:
         '204':
           description: Logged out
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          description: Not authenticated (problem details)
         '403':
-          $ref: '#/components/responses/Forbidden'
+          description: Missing or invalid CSRF token (problem details)
 
   /api/auth/me:
     get:

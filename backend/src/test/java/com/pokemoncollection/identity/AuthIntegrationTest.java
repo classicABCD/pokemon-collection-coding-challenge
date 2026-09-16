@@ -74,7 +74,8 @@ class AuthIntegrationTest extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getRequest().getSession(false);
 
-        mockMvc.perform(post("/api/auth/logout").session(session).with(xsrf()))
+        // Browser clients (RTK Query) send "Accept: application/json"; a 204 endpoint must not answer 406
+        mockMvc.perform(post("/api/auth/logout").session(session).with(xsrf()).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
         mockMvc.perform(get("/api/collection").session(session))
                 .andExpect(status().isUnauthorized());
