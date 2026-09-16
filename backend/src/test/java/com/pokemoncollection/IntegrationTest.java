@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 /**
  * Base class for integration tests: full application, real security filter chain, PostgreSQL via Testcontainers.
  */
-@SpringBootTest(properties = "app.catalog.sync.sync-on-startup=false")
+@SpringBootTest(properties = "app.catalog.sync.initial-sync=false")
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 public abstract class IntegrationTest {

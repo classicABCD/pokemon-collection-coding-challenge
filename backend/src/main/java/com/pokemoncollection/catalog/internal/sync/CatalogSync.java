@@ -21,6 +21,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class CatalogSync {
 
+    public enum State {
+        IDLE,
+        RUNNING,
+        /** The last run could not load any Pokémon, e.g. because PokéAPI was unreachable. */
+        FAILED
+    }
+
     private static final Logger log = LoggerFactory.getLogger(CatalogSync.class);
 
     private final PokeApiClient client;
@@ -28,6 +35,7 @@ public class CatalogSync {
     private final PokemonRepository pokemon;
     private final CatalogSyncProperties properties;
     private final AtomicBoolean running = new AtomicBoolean(false);
+    private volatile boolean lastRunFailed = false;
 
     CatalogSync(
             PokeApiClient client, CatalogWriter writer, PokemonRepository pokemon, CatalogSyncProperties properties) {
@@ -43,19 +51,28 @@ public class CatalogSync {
             return;
         }
         try {
-            doRun();
+            lastRunFailed = !doRun();
         } finally {
             running.set(false);
         }
     }
 
-    private void doRun() {
+    /** State of this instance's sync, kept in memory. */
+    public State state() {
+        if (running.get()) {
+            return State.RUNNING;
+        }
+        return lastRunFailed ? State.FAILED : State.IDLE;
+    }
+
+    /** @return false if no Pokémon could be loaded */
+    private boolean doRun() {
         HashSet<Integer> upstreamIds;
         try {
             upstreamIds = new HashSet<>(client.fetchAllIds());
         } catch (RuntimeException e) {
             log.warn("Catalog sync aborted, PokéAPI unavailable: {}", e.getMessage());
-            return;
+            return false;
         }
 
         List<Pokemon> known = pokemon.findAll();
@@ -84,6 +101,7 @@ public class CatalogSync {
                             permits.release();
                         }
                     } catch (InterruptedException e) {
+                        failures.incrementAndGet();
                         Thread.currentThread().interrupt();
                     } catch (RuntimeException e) {
                         // Keep the last known data of this Pokémon
@@ -105,5 +123,7 @@ public class CatalogSync {
         } else {
             log.info("Catalog sync finished");
         }
+        // An empty upstream list or only failed detail requests loaded nothing
+        return failures.get() < plan.toUpsert().size();
     }
 }

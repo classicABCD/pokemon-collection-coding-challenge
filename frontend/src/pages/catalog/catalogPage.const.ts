@@ -12,3 +12,6 @@ export const CATALOG_SORT_OPTIONS: SortOption[] = [
 ];
 
 export const CATALOG_LOADING_MESSAGE = 'The catalog is being loaded from PokéAPI…';
+
+export const CATALOG_SYNC_FAILED_MESSAGE =
+  'PokéAPI is currently not reachable. The catalog is loaded automatically as soon as it is available again.';

@@ -29,6 +29,8 @@ app:
     sync:
       base-url: ${POKEAPI_BASE_URL:https://pokeapi.co/api/v2}
       cron: "0 0 3 * * *"
-      sync-on-startup: true
+      # Load the catalog on startup; while it is still empty (e.g. PokéAPI unreachable) retry after this delay
+      initial-sync: true
+      initial-sync-retry-delay: 1m
       max-deprecation-ratio: 0.1
       max-concurrent-requests: 10

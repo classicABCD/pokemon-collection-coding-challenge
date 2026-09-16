@@ -126,6 +126,24 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  /api/pokemon/sync-status:
+    get:
+      tags: [catalog]
+      operationId: getCatalogSyncStatus
+      summary: Get the state of the catalog sync with PokéAPI
+      description: |
+        Lets the frontend explain an empty catalog: the initial sync is still running, or PokéAPI is unreachable and
+        the sync is retried automatically.
+      responses:
+        '200':
+          description: Sync status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogSyncStatus'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /api/collection:
     get:
       tags: [collection]
@@ -271,6 +289,20 @@ components:
         deprecated:
           type: boolean
           description: True if the Pokémon no longer exists in PokéAPI
+
+    CatalogSyncStatus:
+      type: object
+      required: [state]
+      properties:
+        state:
+          $ref: '#/components/schemas/CatalogSyncState'
+
+    CatalogSyncState:
+      type: string
+      enum: [idle, running, failed]
+      description: |
+        `running`: a sync is in progress. `failed`: the last sync could not load any Pokémon (e.g. PokéAPI
+        unreachable); while the catalog is empty it is retried automatically. `idle`: no sync running, last one fine.
 
     CollectionEntry:
       type: object
