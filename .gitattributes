@@ -1,0 +1,5 @@
+# LF everywhere (Biome formats with LF); Windows scripts keep CRLF
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.png binary
+*.jar binary
