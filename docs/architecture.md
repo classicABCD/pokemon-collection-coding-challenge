@@ -51,7 +51,7 @@ flowchart LR
 | Module | Responsibility |
 |--------|----------------|
 | `identity` | Registration, login/logout, Spring Security, current trainer ("user") |
-| `catalog` | Local Pokémon data, search, scheduled PokéAPI sync, deprecation of Pokemons |
+| `catalog` | Local Pokémon data, scheduled PokéAPI sync, deprecation of Pokémon |
 | `collection` | Collection entries of a trainer |
 
 **Uniqueness:** A Pokémon can be in a trainer's collection only once. The primary key `(trainer_id, pokemon_id)`
@@ -65,9 +65,11 @@ enforces this; adding it again returns `409 Conflict`.
 | Endpoint | Purpose |
 |----------|---------|
 | `POST /api/auth/register` · `login` · `logout`, `GET /api/auth/me` | Authentication |
-| `GET /api/pokemon?query=` | Search catalog |
+| `GET /api/pokemon` | List catalog (all non-deprecated Pokémon) |
 | `GET /api/collection` | List own collection |
 | `POST /api/collection` `{ pokemonId }` | Add a Pokémon to own collection |
+
+Filtering and sorting of catalog and collection happen in the frontend; the datasets are small (~1,000 Pokémon).
 
 ## 5. Deployment
 

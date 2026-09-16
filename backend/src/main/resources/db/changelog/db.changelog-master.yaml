@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: identity/001-create-trainer.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: catalog/001-create-pokemon.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: collection/001-create-collection-entry.yaml
+      relativeToChangelogFile: true

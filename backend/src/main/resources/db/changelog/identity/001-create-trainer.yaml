@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: identity-001-create-trainer
+      author: pokemon-collection
+      changes:
+        - createTable:
+            tableName: trainer
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password_hash
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: CREATE UNIQUE INDEX ux_trainer_username_lower ON trainer (lower(username))

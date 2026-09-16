@@ -1,0 +1,316 @@
+openapi: 3.0.3
+info:
+  title: Pokémon Collection API
+  version: 1.0.0
+  description: |
+    Contract between frontend and backend (specification first).
+
+    **Authentication:** session cookie (`JSESSIONID`), set by `login` or `register`.
+
+    **CSRF:** every state-changing request (`POST`) must send the value of the `XSRF-TOKEN` cookie
+    as the `X-XSRF-TOKEN` header. The cookie is issued on the first response (e.g. `GET /api/auth/me`).
+
+    **Data isolation:** the trainer is always taken from the session. No endpoint accepts a trainer id.
+servers:
+  - url: /
+tags:
+  - name: auth
+    description: Registration, login and session
+  - name: catalog
+    description: Local Pokémon catalog
+  - name: collection
+    description: Collection of the logged-in trainer
+
+security:
+  - sessionCookie: []
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [auth]
+      operationId: register
+      summary: Register a new trainer and start a session
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Trainer created and logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trainer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Username already taken
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /api/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Log in and start a session
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trainer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: End the current session
+      responses:
+        '204':
+          description: Logged out
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/auth/me:
+    get:
+      tags: [auth]
+      operationId: getCurrentTrainer
+      summary: Get the logged-in trainer
+      security: []
+      responses:
+        '200':
+          description: Current trainer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trainer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/pokemon:
+    get:
+      tags: [catalog]
+      operationId: listPokemon
+      summary: List all non-deprecated Pokémon
+      description: Returns the complete catalog. Filtering and sorting happen in the frontend.
+      responses:
+        '200':
+          description: Catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pokemon'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/collection:
+    get:
+      tags: [collection]
+      operationId: listCollection
+      summary: List the collection of the logged-in trainer
+      description: Includes deprecated Pokémon (flagged with `deprecated = true`).
+      responses:
+        '200':
+          description: Collection entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CollectionEntry'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [collection]
+      operationId: addToCollection
+      summary: Add a Pokémon to the collection of the logged-in trainer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCollectionRequest'
+      responses:
+        '201':
+          description: Pokémon added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionEntry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Pokémon is already in the collection
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '422':
+          description: Pokémon is unknown or deprecated
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Unauthorized:
+      description: Not authenticated or invalid credentials
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+    Forbidden:
+      description: Missing or invalid CSRF token
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetail'
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+          pattern: '^[a-zA-Z0-9_]+$'
+          example: ash_ketchum
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+          description: Max. 72 characters (BCrypt limit)
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: ash_ketchum
+        password:
+          type: string
+          format: password
+
+    Trainer:
+      type: object
+      required: [id, username]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+          example: ash_ketchum
+
+    Pokemon:
+      type: object
+      required: [id, name, types, deprecated]
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: PokéAPI id (National Pokédex number)
+          example: 25
+        name:
+          type: string
+          example: pikachu
+        types:
+          type: array
+          description: One or two type names, in slot order
+          items:
+            type: string
+          example: [electric]
+        spriteUrl:
+          type: string
+          nullable: true
+          example: https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png
+        deprecated:
+          type: boolean
+          description: True if the Pokémon no longer exists in PokéAPI
+
+    CollectionEntry:
+      type: object
+      required: [pokemon, addedAt]
+      properties:
+        pokemon:
+          $ref: '#/components/schemas/Pokemon'
+        addedAt:
+          type: string
+          format: date-time
+
+    AddToCollectionRequest:
+      type: object
+      required: [pokemonId]
+      properties:
+        pokemonId:
+          type: integer
+          format: int32
+          minimum: 1
+          example: 25
+
+    ProblemDetail:
+      type: object
+      description: RFC 9457 problem details
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          example: Conflict
+        status:
+          type: integer
+          format: int32
+          example: 409
+        detail:
+          type: string
+          example: Pokémon 25 is already in your collection
+        instance:
+          type: string
+          example: /api/collection

@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: catalog-001-create-pokemon
+      author: pokemon-collection
+      changes:
+        - createTable:
+            tableName: pokemon
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: types
+                  type: text[]
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sprite_url
+                  type: varchar(500)
+              - column:
+                  name: deprecated
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deprecated_at
+                  type: timestamptz
+              - column:
+                  name: last_synced_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
