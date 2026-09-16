@@ -138,7 +138,8 @@
                             <inputSpec>${openapi.spec}</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>com.pokemoncollection.api</apiPackage>
-                            <modelPackage>com.pokemoncollection.api.model</modelPackage>
+                            <modelPackage>com.pokemoncollection.api</modelPackage>
+                            <modelNameSuffix>Dto</modelNameSuffix>
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
                             <generateApiDocumentation>false</generateApiDocumentation>

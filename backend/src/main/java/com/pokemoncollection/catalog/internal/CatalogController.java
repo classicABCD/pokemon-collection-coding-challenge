@@ -1,7 +1,7 @@
 package com.pokemoncollection.catalog.internal;
 
 import com.pokemoncollection.api.CatalogApi;
-import com.pokemoncollection.api.model.Pokemon;
+import com.pokemoncollection.api.PokemonDto;
 import com.pokemoncollection.catalog.CatalogQuery;
 import com.pokemoncollection.catalog.PokemonView;
 import java.util.List;
@@ -18,7 +18,7 @@ class CatalogController implements CatalogApi {
     }
 
     @Override
-    public ResponseEntity<List<Pokemon>> listPokemon() {
+    public ResponseEntity<List<PokemonDto>> listPokemon() {
         return ResponseEntity.ok(catalog.findAllActive().stream().map(PokemonView::toDto).toList());
     }
 }

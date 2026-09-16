@@ -224,7 +224,7 @@ components:
           format: password
           minLength: 8
           maxLength: 72
-          description: Max. 72 characters (BCrypt limit)
+          description: Max. 72 characters and 72 bytes in UTF-8 (BCrypt limit)
 
     LoginRequest:
       type: object

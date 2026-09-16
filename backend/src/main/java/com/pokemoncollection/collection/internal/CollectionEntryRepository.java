@@ -10,6 +10,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 interface CollectionEntryRepository extends JpaRepository<CollectionEntry, CollectionEntry.Key> {
 
     List<CollectionEntry> findAllByTrainerIdOrderByAddedAtDesc(UUID trainerId);
-
-    boolean existsByTrainerIdAndPokemonId(UUID trainerId, int pokemonId);
 }

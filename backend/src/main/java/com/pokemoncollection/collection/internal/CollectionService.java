@@ -35,14 +35,11 @@ class CollectionService {
                 .filter(p -> !p.deprecated())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_CONTENT,
                         "Pokémon %d is unknown or deprecated".formatted(pokemonId)));
-        if (entries.existsByTrainerIdAndPokemonId(trainerId, pokemonId)) {
-            throw alreadyInCollection(pokemonId);
-        }
         try {
             CollectionEntry entry = entries.saveAndFlush(new CollectionEntry(trainerId, pokemonId));
             return new CollectionItem(pokemon, entry.getAddedAt());
         } catch (DataIntegrityViolationException e) {
-            // Concurrent add of the same Pokémon
+            // Primary key (trainer_id, pokemon_id) guarantees uniqueness
             throw alreadyInCollection(pokemonId);
         }
     }

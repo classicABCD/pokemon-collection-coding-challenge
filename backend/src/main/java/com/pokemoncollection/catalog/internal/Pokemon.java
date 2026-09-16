@@ -58,6 +58,10 @@ public class Pokemon {
         deprecatedAt = null;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public boolean isDeprecated() {
         return deprecated;
     }

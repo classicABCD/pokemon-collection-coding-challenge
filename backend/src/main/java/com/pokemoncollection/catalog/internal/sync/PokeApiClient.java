@@ -16,15 +16,11 @@ import org.springframework.web.client.RestClient;
 @Component
 public class PokeApiClient {
 
-    /** PokéAPI ids from 10001 are alternative forms (megas, regional variants, …); only base species are synced. */
-    static final int MAX_BASE_SPECIES_ID = 9999;
-
     private final RestClient restClient;
 
     PokeApiClient(RestClient.Builder builder, CatalogSyncProperties properties) {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
-                .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(Duration.ofSeconds(15));
@@ -34,7 +30,7 @@ public class PokeApiClient {
                 .build();
     }
 
-    /** Ids of all base species currently available upstream. */
+    /** Ids of all Pokémon currently available upstream (including alternative forms). */
     public List<Integer> fetchAllIds() {
         PokemonList list = restClient.get()
                 .uri("/pokemon?limit=100000")
@@ -45,7 +41,6 @@ public class PokeApiClient {
         }
         return list.results().stream()
                 .map(resource -> idFromUrl(resource.url()))
-                .filter(id -> id <= MAX_BASE_SPECIES_ID)
                 .toList();
     }
 
@@ -59,7 +54,12 @@ public class PokeApiClient {
                 .map(slot -> slot.type().name())
                 .toList();
         String sprite = response.sprites() == null ? null : response.sprites().frontDefault();
-        return new PokemonDetails(response.id(), response.name(), types, sprite);
+        return new PokemonDetails(response.id(), response.name(), types, httpsOrNull(sprite));
+    }
+
+    /** Upstream data is not trusted blindly: only https image URLs reach the frontend. */
+    static String httpsOrNull(String url) {
+        return url != null && url.startsWith("https://") ? url : null;
     }
 
     static int idFromUrl(String url) {

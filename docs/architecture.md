@@ -69,7 +69,7 @@ enforces this; adding it again returns `409 Conflict`.
 | `GET /api/collection` | List own collection |
 | `POST /api/collection` `{ pokemonId }` | Add a Pokémon to own collection |
 
-Filtering and sorting of catalog and collection happen in the frontend; the datasets are small (~1,000 Pokémon).
+Filtering and sorting of catalog and collection happen in the frontend; the datasets are small (~1,300 Pokémon).
 
 ## 5. Deployment
 
@@ -147,3 +147,4 @@ spec.
 | Risk | Mitigation |
 |------|------------|
 | PokéAPI is down on the very first start → catalog stays empty until a sync succeeds. | Sync retries on schedule. Later fix: ship a seed data file loaded by Liquibase. |
+| No rate limiting or lockout on login and registration → password guessing and mass account creation possible. | Out of scope for the challenge. Before production: rate limiting (e.g. at the reverse proxy or Bucket4j) and temporary account lockout. |

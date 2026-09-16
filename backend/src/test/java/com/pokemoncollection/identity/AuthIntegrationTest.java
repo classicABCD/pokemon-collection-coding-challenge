@@ -101,6 +101,32 @@ class AuthIntegrationTest extends IntegrationTest {
         register("x").andExpect(status().isBadRequest());
     }
 
+    @Test
+    void passwordLongerThan72BytesIsBadRequest() throws Exception {
+        // 40 characters pass the length validation but are 80 bytes in UTF-8
+        mockMvc.perform(post("/api/auth/register").with(xsrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(credentials("umlaut", "ä".repeat(40))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void loginRenewsCsrfToken() throws Exception {
+        register("erika").andExpect(status().isCreated());
+        Cookie before = mockMvc.perform(get("/api/auth/me")).andReturn().getResponse().getCookie("XSRF-TOKEN");
+
+        Cookie after = mockMvc.perform(post("/api/auth/login")
+                        .cookie(before)
+                        .header("X-XSRF-TOKEN", before.getValue())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(credentials("erika", PASSWORD)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie("XSRF-TOKEN");
+
+        assertThat(after).isNotNull();
+        assertThat(after.getValue()).isNotEqualTo(before.getValue());
+    }
+
     private org.springframework.test.web.servlet.ResultActions register(String username) throws Exception {
         return mockMvc.perform(post("/api/auth/register").with(xsrf())
                 .contentType(MediaType.APPLICATION_JSON)

@@ -1,7 +1,11 @@
 package com.pokemoncollection.catalog.internal.sync;
 
+import com.pokemoncollection.catalog.internal.Pokemon;
 import com.pokemoncollection.catalog.internal.PokemonRepository;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -54,7 +58,12 @@ public class CatalogSync {
             return;
         }
 
-        SyncPlanner.SyncPlan plan = SyncPlanner.plan(upstreamIds, pokemon.findAllIds(), pokemon.findDeprecatedIds(),
+        List<Pokemon> known = pokemon.findAll();
+        Set<Integer> knownIds = known.stream().map(Pokemon::getId).collect(Collectors.toSet());
+        Set<Integer> deprecatedIds = known.stream().filter(Pokemon::isDeprecated).map(Pokemon::getId)
+                .collect(Collectors.toSet());
+
+        SyncPlanner.SyncPlan plan = SyncPlanner.plan(upstreamIds, knownIds, deprecatedIds,
                 properties.maxDeprecationRatio());
         log.info("Catalog sync started: {} upstream, {} to deprecate, {} to reactivate",
                 plan.toUpsert().size(), plan.toDeprecate().size(), plan.toReactivate().size());
@@ -86,6 +95,11 @@ public class CatalogSync {
             log.warn("Deprecation skipped: upstream list looks incomplete ({} ids)", upstreamIds.size());
         }
         writer.applyDeprecation(plan.toDeprecate(), plan.toReactivate());
-        log.info("Catalog sync finished: {} failed", failures.get());
+        if (failures.get() > 0) {
+            log.warn("Catalog sync finished: {} Pokémon could not be synced and keep their last known data",
+                    failures.get());
+        } else {
+            log.info("Catalog sync finished");
+        }
     }
 }
