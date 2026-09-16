@@ -1,8 +1,7 @@
 import { Alert, Center, Group, Loader, Stack, Text, Title } from '@mantine/core';
 import { useMemo } from 'react';
-import { QUERY_OPTIONS } from '../../api/api.const';
 import { errorMessage } from '../../api/apiError.util';
-import { useAddToCollectionMutation, useListCollectionQuery, useListPokemonQuery } from '../../api/pokemonApi';
+import { useAddToCollectionMutation, useListCollectionQuery } from '../../api/pokemonApi';
 import { notifyError } from '../../features/notification/notification.util';
 import { PokemonCard } from '../../features/pokemon/PokemonCard';
 import { PokemonFilterBar } from '../../features/pokemon/PokemonFilterBar';
@@ -11,10 +10,11 @@ import { NO_MATCH_MESSAGE } from '../../features/pokemon/pokemon.const';
 import { availableTypes, filterAndSortPokemon } from '../../features/pokemon/pokemonFilter.util';
 import { usePokemonFilter } from '../../features/pokemon/usePokemonFilter.hook';
 import { CATALOG_DEFAULT_SORT, CATALOG_LOADING_MESSAGE, CATALOG_SORT_OPTIONS, NO_POKEMON } from './catalogPage.const';
+import { useCatalog } from './useCatalog.hook';
 
 export const CatalogPage = () => {
-  const { data: catalog = NO_POKEMON, isLoading, error } = useListPokemonQuery(undefined, QUERY_OPTIONS);
-  const { data: collection } = useListCollectionQuery(undefined, QUERY_OPTIONS);
+  const { data: catalog = NO_POKEMON, isLoading, error } = useCatalog();
+  const { data: collection } = useListCollectionQuery();
   const [addToCollection, addState] = useAddToCollectionMutation();
   const [filter, updateFilter] = usePokemonFilter(CATALOG_DEFAULT_SORT);
 
