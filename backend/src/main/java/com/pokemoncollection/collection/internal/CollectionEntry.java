@@ -28,8 +28,7 @@ class CollectionEntry implements Persistable<CollectionEntry.Key> {
     @Transient
     private boolean isNew = true;
 
-    protected CollectionEntry() {
-    }
+    protected CollectionEntry() {}
 
     CollectionEntry(UUID trainerId, int pokemonId) {
         this.trainerId = trainerId;
@@ -60,6 +59,5 @@ class CollectionEntry implements Persistable<CollectionEntry.Key> {
         isNew = false;
     }
 
-    record Key(UUID trainerId, Integer pokemonId) implements Serializable {
-    }
+    record Key(UUID trainerId, Integer pokemonId) implements Serializable {}
 }

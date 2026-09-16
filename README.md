@@ -1,5 +1,7 @@
 # Pokémon Collection
 
+[![CI](https://github.com/classicABCD/mercedes-coding-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/classicABCD/mercedes-coding-challenge/actions/workflows/ci.yml)
+
 Full-stack application in which trainers manage their personal Pokémon collection.
 
 **Stack:** Java 25 + Spring Boot 4 (modular monolith) · React + Mantine + RTK Query (TypeScript) · PostgreSQL ·
@@ -48,10 +50,22 @@ frontend). API changes start in the spec.
 ## Tests & Linting
 
 ```bash
-cd backend && ./mvnw verify             # unit, integration (Testcontainers), WireMock and module tests – Docker required
+cd backend && ./mvnw verify             # Spotless check + unit, integration (Testcontainers), WireMock, module tests – Docker required
+cd backend && ./mvnw spotless:apply     # format Java code (Palantir Java Format)
 cd frontend && npm test                 # Vitest
-cd frontend && npm run lint             # Biome
+cd frontend && npm run lint             # Biome (lint:fix to apply fixes)
+cd frontend && npm run typecheck        # TypeScript
 ```
+
+## CI/CD
+
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every pull request and push to `main`:
+
+| Job | Checks |
+|-----|--------|
+| Backend · Lint / Test | Spotless · `./mvnw verify` (all backend tests) |
+| Frontend · Lint / Test | Biome + TypeScript · Vitest + production build |
+| Security · Trivy | Filesystem: npm dependencies, committed secrets, Dockerfile/Compose misconfigurations · Images: OS packages and application libraries of both Docker images. Fails on fixable HIGH/CRITICAL findings. |
 
 ## Configuration
 

@@ -21,8 +21,7 @@ class TrainerAccount {
 
     private Instant createdAt;
 
-    protected TrainerAccount() {
-    }
+    protected TrainerAccount() {}
 
     TrainerAccount(String username, String passwordHash) {
         this.id = UUID.randomUUID();

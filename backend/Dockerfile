@@ -13,6 +13,8 @@ COPY backend/src backend/src
 RUN mvn -f backend/pom.xml -B -q -DskipTests package
 
 FROM eclipse-temurin:25-jre-alpine
+# Pick up OS security fixes published after the base image was built
+RUN apk upgrade --no-cache
 WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
 COPY --from=build /workspace/backend/target/pokemon-collection-backend-*.jar app.jar

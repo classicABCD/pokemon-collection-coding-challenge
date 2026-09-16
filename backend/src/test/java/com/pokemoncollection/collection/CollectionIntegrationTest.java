@@ -82,7 +82,8 @@ class CollectionIntegrationTest extends IntegrationTest {
 
     @Test
     void addWithoutCsrfTokenIsForbidden() throws Exception {
-        mockMvc.perform(post("/api/collection").session(registerTrainer())
+        mockMvc.perform(post("/api/collection")
+                        .session(registerTrainer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body(PIKACHU)))
                 .andExpect(status().isForbidden());
@@ -94,7 +95,9 @@ class CollectionIntegrationTest extends IntegrationTest {
     }
 
     private ResultActions add(MockHttpSession session, int pokemonId) throws Exception {
-        return mockMvc.perform(post("/api/collection").session(session).with(xsrf())
+        return mockMvc.perform(post("/api/collection")
+                .session(session)
+                .with(xsrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body(pokemonId)));
     }

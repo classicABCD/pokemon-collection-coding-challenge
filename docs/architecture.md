@@ -31,6 +31,7 @@ PokéAPI is only called by the sync job, never during a user request.
 | Frontend | React, TypeScript, Mantine, RTK Query (caching, cache invalidation after changes, polling), Biome, Vitest |
 | Database | PostgreSQL; schema managed by Liquibase, Hibernate only validates it |
 | API contract | OpenAPI (openapi-generator for the backend, `@rtk-query/codegen-openapi` for the frontend) |
+| Quality & delivery | Spotless (Palantir Java Format), Biome, GitHub Actions, Trivy |
 | Runtime | Docker Compose |
 
 ## 4. Building Blocks
@@ -80,9 +81,15 @@ one host port (`3000`).
 |---------|---------|
 | `postgres` | PostgreSQL with a named volume, health check `pg_isready`, no host port |
 | `backend` | Spring Boot (multi-stage build, non-root JRE image); runs Liquibase migrations on startup; health check via Actuator, not exposed to the host |
-| `frontend` | nginx (multi-stage build): serves the SPA, proxies only `/api` to the backend → one origin, no CORS; sets security headers (CSP) |
+| `frontend` | unprivileged nginx (multi-stage build): serves the SPA, proxies only `/api` to the backend → one origin, no CORS; sets security headers (CSP) |
 
 Startup order follows the health checks: `postgres` → `backend` → `frontend`.
+
+**CI:** every change is checked (lint, tests, Trivy scans of dependencies, configuration and both images).
+
+**Production deployment** (not part of the challenge): publish both images to a registry and run them on a container
+platform behind TLS with a managed PostgreSQL, pass DB credentials as secrets and set `SESSION_COOKIE_SECURE=true`. Scaling the backend to more
+than one instance needs shared sessions (Spring Session JDBC) and a lock for the sync job (ShedLock).
 
 ## 6. Testing
 

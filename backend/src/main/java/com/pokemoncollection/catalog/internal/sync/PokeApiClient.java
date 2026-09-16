@@ -19,23 +19,19 @@ public class PokeApiClient {
     private final RestClient restClient;
 
     PokeApiClient(RestClient.Builder builder, CatalogSyncProperties properties) {
-        HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
+        HttpClient httpClient =
+                HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(Duration.ofSeconds(15));
-        this.restClient = builder
-                .baseUrl(properties.baseUrl())
+        this.restClient = builder.baseUrl(properties.baseUrl())
                 .requestFactory(requestFactory)
                 .build();
     }
 
     /** Ids of all Pokémon currently available upstream (including alternative forms). */
     public List<Integer> fetchAllIds() {
-        PokemonList list = restClient.get()
-                .uri("/pokemon?limit=100000")
-                .retrieve()
-                .body(PokemonList.class);
+        PokemonList list =
+                restClient.get().uri("/pokemon?limit=100000").retrieve().body(PokemonList.class);
         if (list == null || list.results() == null) {
             return List.of();
         }
@@ -45,10 +41,9 @@ public class PokeApiClient {
     }
 
     public PokemonDetails fetchDetails(int id) {
-        PokemonResponse response = Objects.requireNonNull(restClient.get()
-                .uri("/pokemon/{id}", id)
-                .retrieve()
-                .body(PokemonResponse.class), "Empty response for Pokémon " + id);
+        PokemonResponse response = Objects.requireNonNull(
+                restClient.get().uri("/pokemon/{id}", id).retrieve().body(PokemonResponse.class),
+                "Empty response for Pokémon " + id);
         List<String> types = response.types().stream()
                 .sorted(Comparator.comparingInt(TypeSlot::slot))
                 .map(slot -> slot.type().name())
@@ -68,21 +63,15 @@ public class PokeApiClient {
         return Integer.parseInt(trimmed.substring(trimmed.lastIndexOf('/') + 1));
     }
 
-    public record PokemonDetails(int id, String name, List<String> types, String spriteUrl) {
-    }
+    public record PokemonDetails(int id, String name, List<String> types, String spriteUrl) {}
 
-    record PokemonList(List<NamedResource> results) {
-    }
+    record PokemonList(List<NamedResource> results) {}
 
-    record NamedResource(String name, String url) {
-    }
+    record NamedResource(String name, String url) {}
 
-    record PokemonResponse(int id, String name, List<TypeSlot> types, Sprites sprites) {
-    }
+    record PokemonResponse(int id, String name, List<TypeSlot> types, Sprites sprites) {}
 
-    record TypeSlot(int slot, NamedResource type) {
-    }
+    record TypeSlot(int slot, NamedResource type) {}
 
-    record Sprites(@JsonProperty("front_default") String frontDefault) {
-    }
+    record Sprites(@JsonProperty("front_default") String frontDefault) {}
 }

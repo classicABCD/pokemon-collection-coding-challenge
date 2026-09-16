@@ -22,9 +22,11 @@ class CatalogWriter {
     @Transactional
     public void upsert(PokeApiClient.PokemonDetails details) {
         Instant now = Instant.now();
-        pokemon.findById(details.id()).ifPresentOrElse(
-                existing -> existing.update(details.name(), details.types(), details.spriteUrl(), now),
-                () -> pokemon.save(new Pokemon(details.id(), details.name(), details.types(), details.spriteUrl(), now)));
+        pokemon.findById(details.id())
+                .ifPresentOrElse(
+                        existing -> existing.update(details.name(), details.types(), details.spriteUrl(), now),
+                        () -> pokemon.save(
+                                new Pokemon(details.id(), details.name(), details.types(), details.spriteUrl(), now)));
     }
 
     @Transactional

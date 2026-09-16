@@ -11,7 +11,9 @@ COPY frontend/ ./
 # prebuild generates the RTK Query API from the OpenAPI spec, then tsc + vite build
 RUN npm run build
 
-FROM nginx:1.31-alpine
+# Unprivileged nginx: runs as non-root user and listens on 8080
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /workspace/frontend/dist /usr/share/nginx/html
-EXPOSE 80
+USER nginx
+EXPOSE 8080
