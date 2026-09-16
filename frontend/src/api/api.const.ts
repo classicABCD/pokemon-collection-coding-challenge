@@ -1,11 +1,8 @@
-/** One polling interval for all queries, so every view stays equally fresh (e.g. after a catalog sync). */
-export const POLLING_INTERVAL_MS = 5000;
-
-/** Options passed to every query hook. Polling pauses while the browser tab is in the background. */
-export const QUERY_OPTIONS = {
-  pollingInterval: POLLING_INTERVAL_MS,
-  skipPollingIfUnfocused: true,
-} as const;
+/**
+ * Polling interval while the catalog is still empty (initial sync after the first start).
+ * No other query is polled: every request extends the session, so polling would disable the idle timeout.
+ */
+export const CATALOG_SYNC_POLLING_MS = 5000;
 
 /** Cache tags, derived from the OpenAPI tags. */
 export const TAG_TYPES = ['auth', 'catalog', 'collection'] as const;

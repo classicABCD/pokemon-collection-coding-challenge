@@ -22,6 +22,9 @@ server:
         secure: ${SESSION_COOKIE_SECURE:false}
 
 app:
+  identity:
+    # Ends every session after this time, even an active one (the servlet session timeout above only covers idleness)
+    session-absolute-timeout: 8h
   catalog:
     sync:
       base-url: ${POKEAPI_BASE_URL:https://pokeapi.co/api/v2}

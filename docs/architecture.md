@@ -28,7 +28,7 @@ PokéAPI is only called by the sync job, never during a user request.
 | Area | Choice |
 |------|--------|
 | Backend | Java, Spring Boot, Spring Security, Spring Modulith |
-| Frontend | React, TypeScript, Mantine, RTK Query (caching, cache invalidation after changes, polling), Biome, Vitest |
+| Frontend | React, TypeScript, Mantine, RTK Query (caching, cache invalidation after changes, polling during the initial catalog sync), Biome, Vitest |
 | Database | PostgreSQL; schema managed by Liquibase, Hibernate only validates it |
 | API contract | OpenAPI (openapi-generator for the backend, `@rtk-query/codegen-openapi` for the frontend) |
 | Quality & delivery | Spotless (Palantir Java Format), Biome, GitHub Actions, Trivy |
@@ -119,6 +119,9 @@ each other's public interfaces; Spring Modulith checks this in a test.
 only use a `CurrentTrainer` abstraction.
 - CSRF protection uses a readable `XSRF-TOKEN` cookie that the frontend sends back as the `X-XSRF-TOKEN` header.
 - nginx serves the SPA and proxies `/api`, so everything runs on one origin, with no CORS or cross-site cookies.
+- Sessions end after 30 minutes without requests (idle timeout) and at the latest 8 hours after login (absolute
+  timeout). The frontend doesn't poll, except for the catalog while it is still empty during the initial sync:
+  polling would keep an unattended tab logged in forever.
 
 **Trade-off:** Simple and secure for a single same-origin SPA → stateful (sessions lost on restart). Switching to
 other authentication methods later only affects `identity`.

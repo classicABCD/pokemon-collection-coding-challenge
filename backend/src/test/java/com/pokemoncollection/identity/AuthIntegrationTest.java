@@ -10,6 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.pokemoncollection.IntegrationTest;
 import jakarta.servlet.http.Cookie;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
@@ -137,6 +140,32 @@ class AuthIntegrationTest extends IntegrationTest {
 
         assertThat(after).isNotNull();
         assertThat(after.getValue()).isNotEqualTo(before.getValue());
+    }
+
+    @Test
+    void sessionOlderThanAbsoluteTimeoutIsInvalidatedEvenIfActive() throws Exception {
+        MockHttpSession session = registerTrainer();
+        mockMvc.perform(get("/api/auth/me").session(session)).andExpect(status().isOk());
+
+        MockHttpSession expired = createdAgo(session, Duration.ofHours(8).plusMinutes(1));
+
+        mockMvc.perform(get("/api/auth/me").session(expired)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/collection").session(expired)).andExpect(status().isUnauthorized());
+        assertThat(expired.isInvalid()).isTrue();
+    }
+
+    /** Copy of the session with an older creation time (MockHttpSession has no setter for it). */
+    private static MockHttpSession createdAgo(MockHttpSession session, Duration age) {
+        long creationTime = Instant.now().minus(age).toEpochMilli();
+        MockHttpSession copy = new MockHttpSession() {
+            @Override
+            public long getCreationTime() {
+                return creationTime;
+            }
+        };
+        Collections.list(session.getAttributeNames())
+                .forEach(name -> copy.setAttribute(name, session.getAttribute(name)));
+        return copy;
     }
 
     private org.springframework.test.web.servlet.ResultActions register(String username) throws Exception {
