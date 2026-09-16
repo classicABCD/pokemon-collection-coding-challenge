@@ -31,8 +31,7 @@ public class Pokemon {
 
     private Instant lastSyncedAt;
 
-    protected Pokemon() {
-    }
+    protected Pokemon() {}
 
     public Pokemon(int id, String name, List<String> types, String spriteUrl, Instant syncedAt) {
         this.id = id;

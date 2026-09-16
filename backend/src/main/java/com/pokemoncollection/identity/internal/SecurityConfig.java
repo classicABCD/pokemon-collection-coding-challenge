@@ -19,8 +19,8 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -32,18 +32,26 @@ import tools.jackson.databind.json.JsonMapper;
 class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository securityContextRepository,
-            CsrfTokenRepository csrfTokenRepository, JsonMapper jsonMapper) {
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            SecurityContextRepository securityContextRepository,
+            CsrfTokenRepository csrfTokenRepository,
+            JsonMapper jsonMapper) {
         http
                 // XSRF-TOKEN cookie readable by the SPA, sent back as X-XSRF-TOKEN header
                 .csrf(csrf -> csrf.spa().csrfTokenRepository(csrfTokenRepository))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/me", "/actuator/health").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().denyAll())
+                .authorizeHttpRequests(
+                        auth -> auth.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/auth/me", "/actuator/health")
+                                .permitAll()
+                                .requestMatchers("/error")
+                                .permitAll()
+                                .requestMatchers("/api/**")
+                                .authenticated()
+                                .anyRequest()
+                                .denyAll())
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, e) ->
                                 writeProblem(response, jsonMapper, HttpStatus.UNAUTHORIZED, "Authentication required"))
@@ -74,8 +82,8 @@ class SecurityConfig {
     }
 
     @Bean
-    AuthenticationManager authenticationManager(TrainerUserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder) {
+    AuthenticationManager authenticationManager(
+            TrainerUserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(provider);
@@ -96,8 +104,8 @@ class SecurityConfig {
         }
     }
 
-    private static void writeProblem(HttpServletResponse response, JsonMapper jsonMapper, HttpStatus status,
-            String detail) throws IOException {
+    private static void writeProblem(
+            HttpServletResponse response, JsonMapper jsonMapper, HttpStatus status, String detail) throws IOException {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
         jsonMapper.writeValue(response.getOutputStream(), ProblemDetail.forStatusAndDetail(status, detail));

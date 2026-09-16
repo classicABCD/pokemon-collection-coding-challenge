@@ -64,8 +64,10 @@ class CatalogSyncIntegrationTest {
         sync.run();
 
         assertThat(count("deprecated = false")).isEqualTo(20);
-        assertThat(jdbc.queryForObject("SELECT name FROM pokemon WHERE id = 1", String.class)).isEqualTo("pokemon-1");
-        assertThat(jdbc.queryForObject("SELECT types[1] FROM pokemon WHERE id = 1", String.class)).isEqualTo("grass");
+        assertThat(jdbc.queryForObject("SELECT name FROM pokemon WHERE id = 1", String.class))
+                .isEqualTo("pokemon-1");
+        assertThat(jdbc.queryForObject("SELECT types[1] FROM pokemon WHERE id = 1", String.class))
+                .isEqualTo("grass");
     }
 
     @Test
@@ -74,7 +76,8 @@ class CatalogSyncIntegrationTest {
         sync.run();
 
         pokeApi.resetAll();
-        pokeApi.stubFor(get(urlPathEqualTo("/api/v2/pokemon")).willReturn(aResponse().withStatus(503)));
+        pokeApi.stubFor(
+                get(urlPathEqualTo("/api/v2/pokemon")).willReturn(aResponse().withStatus(503)));
         sync.run();
 
         assertThat(count("deprecated = false")).isEqualTo(20);
@@ -90,7 +93,8 @@ class CatalogSyncIntegrationTest {
         sync.run();
 
         assertThat(count("true")).isEqualTo(20);
-        assertThat(jdbc.queryForObject("SELECT deprecated FROM pokemon WHERE id = 20", Boolean.class)).isTrue();
+        assertThat(jdbc.queryForObject("SELECT deprecated FROM pokemon WHERE id = 20", Boolean.class))
+                .isTrue();
     }
 
     private void stubPokeApi(int fromId, int toId) {
@@ -98,15 +102,16 @@ class CatalogSyncIntegrationTest {
                 .mapToObj(id -> """
                         {"name": "pokemon-%d", "url": "%s/api/v2/pokemon/%d/"}""".formatted(id, pokeApi.baseUrl(), id))
                 .collect(Collectors.joining(","));
-        pokeApi.stubFor(get(urlPathEqualTo("/api/v2/pokemon")).willReturn(okJson("""
+        pokeApi.stubFor(
+                get(urlPathEqualTo("/api/v2/pokemon")).willReturn(okJson("""
                 {"count": %d, "results": [%s]}""".formatted(toId - fromId + 1, results))));
 
-        IntStream.rangeClosed(fromId, toId).forEach(id -> pokeApi.stubFor(get(urlPathEqualTo("/api/v2/pokemon/" + id))
-                .willReturn(okJson("""
+        IntStream.rangeClosed(fromId, toId)
+                .forEach(id -> pokeApi.stubFor(
+                        get(urlPathEqualTo("/api/v2/pokemon/" + id)).willReturn(okJson("""
                         {"id": %d, "name": "pokemon-%d",
                          "types": [{"slot": 2, "type": {"name": "poison"}}, {"slot": 1, "type": {"name": "grass"}}],
-                         "sprites": {"front_default": "https://sprites.example/%d.png"}}"""
-                        .formatted(id, id, id)))));
+                         "sprites": {"front_default": "https://sprites.example/%d.png"}}""".formatted(id, id, id)))));
     }
 
     private int count(String condition) {

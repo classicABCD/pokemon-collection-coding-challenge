@@ -8,8 +8,7 @@ import java.util.Set;
  */
 public final class SyncPlanner {
 
-    private SyncPlanner() {
-    }
+    private SyncPlanner() {}
 
     /**
      * @param upstreamIds         ids currently available in PokéAPI
@@ -17,8 +16,8 @@ public final class SyncPlanner {
      * @param deprecatedIds       ids in the local catalog that are deprecated
      * @param maxDeprecationRatio max share of active Pokémon that may be deprecated in one run
      */
-    public static SyncPlan plan(Set<Integer> upstreamIds, Set<Integer> knownIds, Set<Integer> deprecatedIds,
-            double maxDeprecationRatio) {
+    public static SyncPlan plan(
+            Set<Integer> upstreamIds, Set<Integer> knownIds, Set<Integer> deprecatedIds, double maxDeprecationRatio) {
         Set<Integer> activeIds = new HashSet<>(knownIds);
         activeIds.removeAll(deprecatedIds);
 
@@ -39,7 +38,6 @@ public final class SyncPlanner {
                 skipDeprecation);
     }
 
-    public record SyncPlan(Set<Integer> toUpsert, Set<Integer> toDeprecate, Set<Integer> toReactivate,
-            boolean deprecationSkipped) {
-    }
+    public record SyncPlan(
+            Set<Integer> toUpsert, Set<Integer> toDeprecate, Set<Integer> toReactivate, boolean deprecationSkipped) {}
 }

@@ -11,9 +11,11 @@
     "build": "tsc -b && vite build",
     "pretest": "npm run codegen",
     "test": "vitest run",
+    "pretypecheck": "npm run codegen",
+    "typecheck": "tsc -b",
     "lint": "biome check",
-    "preview": "vite preview",
-    "lint:fix": "biome check --write"
+    "lint:fix": "biome check --write",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@mantine/core": "^9.6.1",

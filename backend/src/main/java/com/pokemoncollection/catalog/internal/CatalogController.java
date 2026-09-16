@@ -19,6 +19,7 @@ class CatalogController implements CatalogApi {
 
     @Override
     public ResponseEntity<List<PokemonDto>> listPokemon() {
-        return ResponseEntity.ok(catalog.findAll().stream().map(PokemonView::toDto).toList());
+        return ResponseEntity.ok(
+                catalog.findAll().stream().map(PokemonView::toDto).toList());
     }
 }

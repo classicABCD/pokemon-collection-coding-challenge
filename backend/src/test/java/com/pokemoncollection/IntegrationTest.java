@@ -57,7 +57,8 @@ public abstract class IntegrationTest {
      * (Spring Security's csrf() test helper replaces the token repository and would bypass the cookie mechanism.)
      */
     protected RequestPostProcessor xsrf() throws Exception {
-        Cookie cookie = mockMvc.perform(get("/api/auth/me")).andReturn().getResponse().getCookie("XSRF-TOKEN");
+        Cookie cookie =
+                mockMvc.perform(get("/api/auth/me")).andReturn().getResponse().getCookie("XSRF-TOKEN");
         assertThat(cookie).as("XSRF-TOKEN cookie").isNotNull();
         return request -> {
             request.setCookies(cookie);
@@ -67,8 +68,11 @@ public abstract class IntegrationTest {
     }
 
     protected void insertPokemon(int id, String name, boolean deprecated) {
-        jdbc.update("INSERT INTO pokemon (id, name, types, deprecated, last_synced_at) VALUES (?, ?, '{electric}', ?, now())",
-                id, name, deprecated);
+        jdbc.update(
+                "INSERT INTO pokemon (id, name, types, deprecated, last_synced_at) VALUES (?, ?, '{electric}', ?, now())",
+                id,
+                name,
+                deprecated);
     }
 
     protected static String credentials(String username, String password) {

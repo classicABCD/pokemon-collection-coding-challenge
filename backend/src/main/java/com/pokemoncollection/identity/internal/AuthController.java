@@ -38,9 +38,14 @@ class AuthController implements AuthApi {
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
-    AuthController(TrainerRepository trainers, PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager, SecurityContextRepository securityContextRepository,
-            CsrfTokenRepository csrfTokenRepository, HttpServletRequest request, HttpServletResponse response) {
+    AuthController(
+            TrainerRepository trainers,
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            SecurityContextRepository securityContextRepository,
+            CsrfTokenRepository csrfTokenRepository,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         this.trainers = trainers;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;

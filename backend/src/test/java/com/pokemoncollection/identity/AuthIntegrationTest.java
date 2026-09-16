@@ -22,7 +22,9 @@ class AuthIntegrationTest extends IntegrationTest {
 
         String username = mockMvc.perform(get("/api/auth/me").session(session))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         assertThat(username).contains("trainer_");
 
         String hash = jdbc.queryForObject("SELECT password_hash FROM trainer", String.class);
@@ -34,7 +36,9 @@ class AuthIntegrationTest extends IntegrationTest {
         Cookie xsrfCookie = mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(cookie().exists("XSRF-TOKEN"))
-                .andReturn().getResponse().getCookie("XSRF-TOKEN");
+                .andReturn()
+                .getResponse()
+                .getCookie("XSRF-TOKEN");
 
         mockMvc.perform(post("/api/auth/register")
                         .cookie(xsrfCookie)
@@ -58,7 +62,8 @@ class AuthIntegrationTest extends IntegrationTest {
     void loginWithWrongPasswordIsUnauthorized() throws Exception {
         register("gary").andExpect(status().isCreated());
 
-        mockMvc.perform(post("/api/auth/login").with(xsrf())
+        mockMvc.perform(post("/api/auth/login")
+                        .with(xsrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(credentials("gary", "wrong-password")))
                 .andExpect(status().isUnauthorized());
@@ -68,17 +73,19 @@ class AuthIntegrationTest extends IntegrationTest {
     void loginAndLogout() throws Exception {
         register("oak").andExpect(status().isCreated());
 
-        MockHttpSession session = (MockHttpSession) mockMvc.perform(post("/api/auth/login").with(xsrf())
+        MockHttpSession session = (MockHttpSession) mockMvc.perform(post("/api/auth/login")
+                        .with(xsrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(credentials("oak", PASSWORD)))
                 .andExpect(status().isOk())
-                .andReturn().getRequest().getSession(false);
+                .andReturn()
+                .getRequest()
+                .getSession(false);
 
         // Browser clients (RTK Query) send "Accept: application/json"; a 204 endpoint must not answer 406
         mockMvc.perform(post("/api/auth/logout").session(session).with(xsrf()).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
-        mockMvc.perform(get("/api/collection").session(session))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/collection").session(session)).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -105,7 +112,8 @@ class AuthIntegrationTest extends IntegrationTest {
     @Test
     void passwordLongerThan72BytesIsBadRequest() throws Exception {
         // 40 characters pass the length validation but are 80 bytes in UTF-8
-        mockMvc.perform(post("/api/auth/register").with(xsrf())
+        mockMvc.perform(post("/api/auth/register")
+                        .with(xsrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(credentials("umlaut", "ä".repeat(40))))
                 .andExpect(status().isBadRequest());
@@ -114,7 +122,8 @@ class AuthIntegrationTest extends IntegrationTest {
     @Test
     void loginRenewsCsrfToken() throws Exception {
         register("erika").andExpect(status().isCreated());
-        Cookie before = mockMvc.perform(get("/api/auth/me")).andReturn().getResponse().getCookie("XSRF-TOKEN");
+        Cookie before =
+                mockMvc.perform(get("/api/auth/me")).andReturn().getResponse().getCookie("XSRF-TOKEN");
 
         Cookie after = mockMvc.perform(post("/api/auth/login")
                         .cookie(before)
@@ -122,14 +131,17 @@ class AuthIntegrationTest extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(credentials("erika", PASSWORD)))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getCookie("XSRF-TOKEN");
+                .andReturn()
+                .getResponse()
+                .getCookie("XSRF-TOKEN");
 
         assertThat(after).isNotNull();
         assertThat(after.getValue()).isNotEqualTo(before.getValue());
     }
 
     private org.springframework.test.web.servlet.ResultActions register(String username) throws Exception {
-        return mockMvc.perform(post("/api/auth/register").with(xsrf())
+        return mockMvc.perform(post("/api/auth/register")
+                .with(xsrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(credentials(username, PASSWORD)));
     }

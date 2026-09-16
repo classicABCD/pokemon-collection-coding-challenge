@@ -5,12 +5,12 @@ import com.pokemoncollection.catalog.internal.PokemonRepository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,8 @@ public class CatalogSync {
     private final CatalogSyncProperties properties;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    CatalogSync(PokeApiClient client, CatalogWriter writer, PokemonRepository pokemon,
-            CatalogSyncProperties properties) {
+    CatalogSync(
+            PokeApiClient client, CatalogWriter writer, PokemonRepository pokemon, CatalogSyncProperties properties) {
         this.client = client;
         this.writer = writer;
         this.pokemon = pokemon;
@@ -60,13 +60,16 @@ public class CatalogSync {
 
         List<Pokemon> known = pokemon.findAll();
         Set<Integer> knownIds = known.stream().map(Pokemon::getId).collect(Collectors.toSet());
-        Set<Integer> deprecatedIds = known.stream().filter(Pokemon::isDeprecated).map(Pokemon::getId)
-                .collect(Collectors.toSet());
+        Set<Integer> deprecatedIds =
+                known.stream().filter(Pokemon::isDeprecated).map(Pokemon::getId).collect(Collectors.toSet());
 
-        SyncPlanner.SyncPlan plan = SyncPlanner.plan(upstreamIds, knownIds, deprecatedIds,
-                properties.maxDeprecationRatio());
-        log.info("Catalog sync started: {} upstream, {} to deprecate, {} to reactivate",
-                plan.toUpsert().size(), plan.toDeprecate().size(), plan.toReactivate().size());
+        SyncPlanner.SyncPlan plan =
+                SyncPlanner.plan(upstreamIds, knownIds, deprecatedIds, properties.maxDeprecationRatio());
+        log.info(
+                "Catalog sync started: {} upstream, {} to deprecate, {} to reactivate",
+                plan.toUpsert().size(),
+                plan.toDeprecate().size(),
+                plan.toReactivate().size());
 
         AtomicInteger failures = new AtomicInteger();
         Semaphore permits = new Semaphore(properties.maxConcurrentRequests());
@@ -96,7 +99,8 @@ public class CatalogSync {
         }
         writer.applyDeprecation(plan.toDeprecate(), plan.toReactivate());
         if (failures.get() > 0) {
-            log.warn("Catalog sync finished: {} Pokémon could not be synced and keep their last known data",
+            log.warn(
+                    "Catalog sync finished: {} Pokémon could not be synced and keep their last known data",
                     failures.get());
         } else {
             log.info("Catalog sync finished");

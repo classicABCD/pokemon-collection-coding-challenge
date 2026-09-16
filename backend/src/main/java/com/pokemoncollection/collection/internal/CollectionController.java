@@ -1,7 +1,7 @@
 package com.pokemoncollection.collection.internal;
 
-import com.pokemoncollection.api.CollectionApi;
 import com.pokemoncollection.api.AddToCollectionRequestDto;
+import com.pokemoncollection.api.CollectionApi;
 import com.pokemoncollection.api.CollectionEntryDto;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -25,7 +25,8 @@ class CollectionController implements CollectionApi {
 
     @Override
     public ResponseEntity<List<CollectionEntryDto>> listCollection() {
-        return ResponseEntity.ok(collection.list().stream().map(CollectionController::toDto).toList());
+        return ResponseEntity.ok(
+                collection.list().stream().map(CollectionController::toDto).toList());
     }
 
     private static CollectionEntryDto toDto(CollectionService.CollectionItem item) {

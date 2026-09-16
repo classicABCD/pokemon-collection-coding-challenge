@@ -33,8 +33,8 @@ class CollectionService {
         UUID trainerId = currentTrainer.id();
         PokemonView pokemon = catalog.findById(pokemonId)
                 .filter(p -> !p.deprecated())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNPROCESSABLE_CONTENT,
-                        "Pokémon %d is unknown or deprecated".formatted(pokemonId)));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNPROCESSABLE_CONTENT, "Pokémon %d is unknown or deprecated".formatted(pokemonId)));
         try {
             CollectionEntry entry = entries.saveAndFlush(new CollectionEntry(trainerId, pokemonId));
             return new CollectionItem(pokemon, entry.getAddedAt());
@@ -47,19 +47,21 @@ class CollectionService {
     @Transactional(readOnly = true)
     List<CollectionItem> list() {
         List<CollectionEntry> own = entries.findAllByTrainerIdOrderByAddedAtDesc(currentTrainer.id());
-        Map<Integer, PokemonView> pokemonById = catalog.findAllByIds(own.stream().map(CollectionEntry::getPokemonId).toList())
-                .stream()
-                .collect(Collectors.toMap(PokemonView::id, Function.identity()));
+        Map<Integer, PokemonView> pokemonById =
+                catalog
+                        .findAllByIds(
+                                own.stream().map(CollectionEntry::getPokemonId).toList())
+                        .stream()
+                        .collect(Collectors.toMap(PokemonView::id, Function.identity()));
         return own.stream()
                 .map(entry -> new CollectionItem(pokemonById.get(entry.getPokemonId()), entry.getAddedAt()))
                 .toList();
     }
 
     private static ResponseStatusException alreadyInCollection(int pokemonId) {
-        return new ResponseStatusException(HttpStatus.CONFLICT,
-                "Pokémon %d is already in your collection".formatted(pokemonId));
+        return new ResponseStatusException(
+                HttpStatus.CONFLICT, "Pokémon %d is already in your collection".formatted(pokemonId));
     }
 
-    record CollectionItem(PokemonView pokemon, Instant addedAt) {
-    }
+    record CollectionItem(PokemonView pokemon, Instant addedAt) {}
 }
