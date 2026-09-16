@@ -28,7 +28,7 @@ PokéAPI is only called by the sync job, never during a user request.
 | Area | Choice |
 |------|--------|
 | Backend | Java, Spring Boot, Spring Security, Spring Modulith |
-| Frontend | React, TypeScript, Mantine, RTK Query (caching, cache invalidation after changes, polling) |
+| Frontend | React, TypeScript, Mantine, RTK Query (caching, cache invalidation after changes, polling), Biome, Vitest |
 | Database | PostgreSQL; schema managed by Liquibase, Hibernate only validates it |
 | API contract | OpenAPI (openapi-generator for the backend, `@rtk-query/codegen-openapi` for the frontend) |
 | Runtime | Docker Compose |
