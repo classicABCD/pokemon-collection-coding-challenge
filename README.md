@@ -78,6 +78,11 @@ Environment variables for `docker compose` (all optional):
 | `POKEAPI_BASE_URL` | `https://pokeapi.co/api/v2` | Source of the catalog sync |
 | `SESSION_COOKIE_SECURE` | `false` | Set to `true` when served via HTTPS |
 
+## Time Spent
+
+- **Time spent:** approx. **2 h 45 min** of net working time, spread over one afternoon with breaks in between (the
+  commit timestamps therefore span a longer period).
+
 ## Project Structure
 
 ```

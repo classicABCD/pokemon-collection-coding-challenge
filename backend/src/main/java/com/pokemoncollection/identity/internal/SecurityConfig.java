@@ -4,7 +4,11 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -36,8 +41,12 @@ class SecurityConfig {
             HttpSecurity http,
             SecurityContextRepository securityContextRepository,
             CsrfTokenRepository csrfTokenRepository,
-            JsonMapper jsonMapper) {
+            JsonMapper jsonMapper,
+            @Value("${app.identity.session-absolute-timeout}") Duration sessionAbsoluteTimeout) {
         http
+                // Before the security context is loaded from the session, so an expired session is never used
+                .addFilterBefore(
+                        new AbsoluteSessionTimeoutFilter(sessionAbsoluteTimeout), SecurityContextHolderFilter.class)
                 // XSRF-TOKEN cookie readable by the SPA, sent back as X-XSRF-TOKEN header
                 .csrf(csrf -> csrf.spa().csrfTokenRepository(csrfTokenRepository))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
@@ -99,6 +108,33 @@ class SecurityConfig {
                 throws ServletException, IOException {
             if (request.getAttribute(CsrfToken.class.getName()) instanceof CsrfToken csrfToken) {
                 csrfToken.getToken();
+            }
+            chain.doFilter(request, response);
+        }
+    }
+
+    /**
+     * Invalidates sessions older than the absolute timeout. Requests extend the idle timeout, so without this a client
+     * that keeps sending requests (e.g. an open tab) would stay logged in forever.
+     */
+    private static final class AbsoluteSessionTimeoutFilter extends OncePerRequestFilter {
+
+        private final Duration timeout;
+
+        AbsoluteSessionTimeoutFilter(Duration timeout) {
+            this.timeout = timeout;
+        }
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+                throws ServletException, IOException {
+            HttpSession session = request.getSession(false);
+            if (session != null
+                    && Instant.ofEpochMilli(session.getCreationTime())
+                            .plus(timeout)
+                            .isBefore(Instant.now())) {
+                // The request continues anonymously: protected endpoints answer 401
+                session.invalidate();
             }
             chain.doFilter(request, response);
         }
