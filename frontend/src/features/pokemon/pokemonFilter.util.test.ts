@@ -30,6 +30,15 @@ describe('filterAndSortPokemon', () => {
     expect(ids(filterAndSortPokemon(items, { ...noFilter, name: '  CHU ' }))).toEqual([25, 26]);
   });
 
+  it('finds dashed names when searching with spaces', () => {
+    const forms = [
+      { pokemon: pokemon(10094, 'pikachu-original-cap', ['electric']) },
+      { pokemon: pokemon(10160, 'pikachu-world-cap', ['electric']) },
+    ];
+    const result = filterAndSortPokemon(forms, { ...noFilter, name: 'Pikachu Wo' });
+    expect(result.map((item) => item.pokemon.name)).toEqual(['pikachu-world-cap']);
+  });
+
   it('requires all selected types', () => {
     expect(ids(filterAndSortPokemon(items, { ...noFilter, types: ['grass', 'poison'] }))).toEqual([1, 43]);
     expect(ids(filterAndSortPokemon(items, { ...noFilter, types: ['grass', 'electric'] }))).toEqual([]);

@@ -1,6 +1,7 @@
-import { Group, MultiSelect, SegmentedControl, Select, TextInput } from '@mantine/core';
+import { Group, SegmentedControl, Select, TextInput } from '@mantine/core';
 import { DIRECTION_OPTIONS, STATUS_OPTIONS } from './pokemon.const';
 import type { PokemonFilter, SortDirection, SortKey, SortOption, StatusFilter } from './pokemonFilter.type';
+import { TypeFilter } from './TypeFilter';
 
 interface PokemonFilterBarProps {
   filter: PokemonFilter;
@@ -18,16 +19,7 @@ export const PokemonFilterBar = ({ filter, onChange, typeOptions, sortOptions }:
       onChange={(event) => onChange({ name: event.currentTarget.value })}
       w={200}
     />
-    <MultiSelect
-      label="Types"
-      placeholder={filter.types.length ? undefined : 'All types'}
-      data={typeOptions}
-      value={filter.types}
-      onChange={(types) => onChange({ types })}
-      searchable
-      clearable
-      w={240}
-    />
+    <TypeFilter options={typeOptions} value={filter.types} onChange={(types) => onChange({ types })} />
     <SegmentedControl
       value={filter.status}
       onChange={(status) => onChange({ status: status as StatusFilter })}

@@ -2,6 +2,15 @@ import type { SortDirection, StatusFilter } from './pokemonFilter.type';
 
 export const PAGE_SIZE = 24;
 
+/** Selected types shown as badges next to the type filter button; the rest is summarized as "+N". */
+export const TYPE_FILTER_MAX_BADGES = 3;
+
+/** Popover width; never wider than the screen minus the page padding (phones). */
+export const TYPE_FILTER_DROPDOWN = { width: 300, maxWidth: 'calc(100vw - 32px)' } as const;
+
+/** Type names are lowercase in PokéAPI. */
+export const TYPE_CHECKBOX_STYLES = { label: { textTransform: 'capitalize' } } as const;
+
 export const PLACEHOLDER_SPRITE = `data:image/svg+xml;utf8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="30" fill="none" stroke="#adb5bd" stroke-width="4"/><line x1="18" y1="48" x2="78" y2="48" stroke="#adb5bd" stroke-width="4"/><circle cx="48" cy="48" r="8" fill="#adb5bd"/></svg>',
 )}`;
