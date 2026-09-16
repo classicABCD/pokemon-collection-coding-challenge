@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: collection-001-create-collection-entry
+      author: pokemon-collection
+      changes:
+        - createTable:
+            tableName: collection_entry
+            columns:
+              - column:
+                  name: trainer_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_collection_entry_trainer
+                    references: trainer(id)
+                    deleteCascade: true
+              - column:
+                  name: pokemon_id
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_collection_entry_pokemon
+                    references: pokemon(id)
+              - column:
+                  name: added_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: collection_entry
+            columnNames: trainer_id, pokemon_id
+            constraintName: pk_collection_entry

@@ -51,7 +51,7 @@ flowchart LR
 | Module | Responsibility |
 |--------|----------------|
 | `identity` | Registration, login/logout, Spring Security, current trainer ("user") |
-| `catalog` | Local Pokémon data, search, scheduled PokéAPI sync, deprecation of Pokemons |
+| `catalog` | Local Pokémon data, scheduled PokéAPI sync, deprecation of Pokémon |
 | `collection` | Collection entries of a trainer |
 
 **Uniqueness:** A Pokémon can be in a trainer's collection only once. The primary key `(trainer_id, pokemon_id)`
@@ -65,9 +65,11 @@ enforces this; adding it again returns `409 Conflict`.
 | Endpoint | Purpose |
 |----------|---------|
 | `POST /api/auth/register` · `login` · `logout`, `GET /api/auth/me` | Authentication |
-| `GET /api/pokemon?query=` | Search catalog |
+| `GET /api/pokemon` | List catalog (all Pokémon, deprecated ones flagged) |
 | `GET /api/collection` | List own collection |
 | `POST /api/collection` `{ pokemonId }` | Add a Pokémon to own collection |
+
+Filtering and sorting of catalog and collection happen in the frontend; the datasets are small (~1,300 Pokémon).
 
 ## 5. Deployment
 
@@ -127,7 +129,8 @@ new Pokémon and updates existing ones.
 - Pokémon that disappear from PokéAPI are marked `deprecated`, never deleted. `catalog` doesn't depend on
   `collection`, so it can't know whether a Pokémon is in use. It therefore deprecates every removed Pokémon.
 - The `deprecated` flag lives only in `catalog`. Collection entries read it from there instead of keeping a copy.
-  Entries stay visible and are shown as deprecated. Deprecated Pokémon can't be added anymore.
+  Deprecated Pokémon stay visible in the catalog and in collections and are marked as deprecated in the UI. They
+  can't be added anymore.
 - The sync never mass-deprecates: if PokéAPI returns an empty or implausibly short list, the deprecation step is
   skipped.
 
@@ -145,3 +148,4 @@ spec.
 | Risk | Mitigation |
 |------|------------|
 | PokéAPI is down on the very first start → catalog stays empty until a sync succeeds. | Sync retries on schedule. Later fix: ship a seed data file loaded by Liquibase. |
+| No rate limiting or lockout on login and registration → password guessing and mass account creation possible. | Out of scope for the challenge. Before production: rate limiting (e.g. at the reverse proxy or Bucket4j) and temporary account lockout. |

@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: pokemon-collection
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/pokemon}
+    username: ${DB_USERNAME:pokemon}
+    password: ${DB_PASSWORD:pokemon}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  mvc:
+    problemdetails:
+      enabled: true
+
+server:
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:false}
+
+app:
+  catalog:
+    sync:
+      base-url: ${POKEAPI_BASE_URL:https://pokeapi.co/api/v2}
+      cron: "0 0 3 * * *"
+      sync-on-startup: true
+      max-deprecation-ratio: 0.1
+      max-concurrent-requests: 10
