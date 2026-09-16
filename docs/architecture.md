@@ -88,7 +88,7 @@ Startup order follows the health checks: `postgres` → `backend` → `frontend`
 
 **CI:** every change is checked (lint, tests, Trivy scans of dependencies, configuration and both images).
 
-**Production deployment** (not part of the challenge): publish both images to a registry and run them on a container
+**Production deployment**: publish both images to a registry and run them on a container
 platform behind TLS with a managed PostgreSQL, pass DB credentials as secrets and set `SESSION_COOKIE_SECURE=true`. Scaling the backend to more
 than one instance needs shared sessions (Spring Session JDBC) and a lock for the sync job (ShedLock).
 
