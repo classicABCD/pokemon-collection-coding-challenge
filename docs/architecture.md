@@ -73,13 +73,16 @@ Filtering and sorting of catalog and collection happen in the frontend; the data
 
 ## 5. Deployment
 
-`docker compose up --build` starts everything; only Docker is needed on the host.
+`docker compose up --build` starts everything; only Docker is needed on the host. The application is reachable on
+one host port (`3000`).
 
 | Service | Content |
 |---------|---------|
-| `postgres` | PostgreSQL with a named volume |
-| `backend` | Spring Boot (multi-stage build); runs Liquibase migrations on startup |
-| `frontend` | nginx (multi-stage build): serves the SPA and proxies `/api` to the backend → one origin, no CORS |
+| `postgres` | PostgreSQL with a named volume, health check `pg_isready`, no host port |
+| `backend` | Spring Boot (multi-stage build, non-root JRE image); runs Liquibase migrations on startup; health check via Actuator, not exposed to the host |
+| `frontend` | nginx (multi-stage build): serves the SPA, proxies only `/api` to the backend → one origin, no CORS; sets security headers (CSP) |
+
+Startup order follows the health checks: `postgres` → `backend` → `frontend`.
 
 ## 6. Testing
 
