@@ -1,7 +1,8 @@
-import { Center, Loader } from '@mantine/core';
+import { Box, Center, Loader } from '@mantine/core';
 import { Navigate } from 'react-router';
 import { AuthPanel } from '../../features/auth/AuthPanel';
 import { useCurrentTrainer } from '../../features/auth/useCurrentTrainer.hook';
+import { ColorSchemeToggle } from '../../features/layout/ColorSchemeToggle';
 
 export const LoginPage = () => {
   // Also issues the XSRF-TOKEN cookie needed for the login/register POST
@@ -19,8 +20,13 @@ export const LoginPage = () => {
     return <Navigate to="/catalog" replace />;
   }
   return (
-    <Center h="100vh" p="md">
-      <AuthPanel />
-    </Center>
+    <>
+      <Box pos="absolute" top={16} right={16}>
+        <ColorSchemeToggle />
+      </Box>
+      <Center h="100vh" p="md">
+        <AuthPanel />
+      </Center>
+    </>
   );
 };

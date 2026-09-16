@@ -1,4 +1,5 @@
 import type { Pokemon } from '../../api/pokemonApi';
+import { normalizeSearchText } from './pokemon.util';
 import type { PokemonFilter, PokemonItem, SortKey, StatusFilter } from './pokemonFilter.type';
 
 const matchesStatus = (pokemon: Pokemon, status: StatusFilter): boolean => {
@@ -25,14 +26,14 @@ const compare = (a: PokemonItem, b: PokemonItem, sortBy: SortKey): number => {
 
 /**
  * Client-side filtering and sorting for catalog and collection (datasets are small).
- * Name matches case-insensitively as substring; all selected types must be present.
+ * Name matches as substring, ignoring case, accents and dashes vs. spaces; all selected types must be present.
  */
 export const filterAndSortPokemon = <T extends PokemonItem>(items: readonly T[], filter: PokemonFilter): T[] => {
-  const name = filter.name.trim().toLowerCase();
+  const name = normalizeSearchText(filter.name);
   const factor = filter.direction === 'asc' ? 1 : -1;
 
   return items
-    .filter((item) => !name || item.pokemon.name.toLowerCase().includes(name))
+    .filter((item) => !name || normalizeSearchText(item.pokemon.name).includes(name))
     .filter((item) => filter.types.every((type) => item.pokemon.types.includes(type)))
     .filter((item) => matchesStatus(item.pokemon, filter.status))
     .sort((a, b) => factor * compare(a, b, filter.sortBy));

@@ -4,6 +4,7 @@ import { errorMessage, errorStatus } from '../../api/apiError.util';
 import { useLogoutMutation } from '../../api/pokemonApi';
 import { useCurrentTrainer } from '../auth/useCurrentTrainer.hook';
 import { notifyError } from '../notification/notification.util';
+import { ColorSchemeToggle } from './ColorSchemeToggle';
 import { APP_TITLE, NAVIGATION } from './layout.const';
 
 export const AppLayout = () => {
@@ -51,6 +52,7 @@ export const AppLayout = () => {
               <Text size="sm" c="dimmed" visibleFrom="sm">
                 {trainer?.username}
               </Text>
+              <ColorSchemeToggle />
               <Button variant="default" size="compact-md" onClick={handleLogout} loading={isLoading}>
                 Log out
               </Button>
