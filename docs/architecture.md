@@ -67,6 +67,7 @@ enforces this; adding it again returns `409 Conflict`.
 |----------|---------|
 | `POST /api/auth/register` · `login` · `logout`, `GET /api/auth/me` | Authentication |
 | `GET /api/pokemon` | List catalog (all Pokémon, deprecated ones flagged) |
+| `GET /api/pokemon/sync-status` | State of the catalog sync (`idle`, `running`, `failed`) |
 | `GET /api/collection` | List own collection |
 | `POST /api/collection` `{ pokemonId }` | Add a Pokémon to own collection |
 
@@ -146,6 +147,10 @@ new Pokémon and updates existing ones.
   can't be added anymore.
 - The sync never mass-deprecates: if PokéAPI returns an empty or implausibly short list, the deprecation step is
   skipped.
+- While the catalog is empty (first start with PokéAPI unreachable), the initial sync is retried every minute. Only
+  the id list is requested while PokéAPI stays down, so the retries are cheap. A filled catalog is only refreshed by
+  the nightly sync. `GET /api/pokemon/sync-status` lets the frontend show "loading" or "PokéAPI unreachable" instead
+  of an endless spinner; the status is kept in memory per instance.
 
 **Trade-off:** Works during PokéAPI outages → data only as fresh as the last sync.
 
@@ -160,5 +165,5 @@ spec.
 
 | Risk | Mitigation |
 |------|------------|
-| PokéAPI is down on the very first start → catalog stays empty until a sync succeeds. | Sync retries on schedule. Later fix: ship a seed data file loaded by Liquibase. |
+| PokéAPI is down on the very first start → catalog stays empty until a sync succeeds. | The initial sync is retried every minute and the UI explains the outage. Later option: ship a seed data file loaded by Liquibase, so the catalog is never empty. |
 | No rate limiting or lockout on login and registration → password guessing and mass account creation possible. | Out of scope for the challenge. Before production: rate limiting (e.g. at the reverse proxy or Bucket4j) and temporary account lockout. |

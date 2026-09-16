@@ -5,19 +5,30 @@ import { Provider } from 'react-redux';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CATALOG_SYNC_POLLING_MS } from '../../api/api.const';
 import { baseApi } from '../../api/baseApi';
-import type { Pokemon } from '../../api/pokemonApi';
+import type { CatalogSyncState, Pokemon } from '../../api/pokemonApi';
 import { useCatalog } from './useCatalog.hook';
 
 const pikachu: Pokemon = { id: 25, name: 'pikachu', types: ['electric'], deprecated: false };
 
-/** Answers the catalog requests with the given responses in order; the last one repeats. */
-const mockCatalogResponses = (...responses: Pokemon[][]) => {
-  const fetchMock = vi.fn(async () => {
-    const body = responses[Math.min(fetchMock.mock.calls.length - 1, responses.length - 1)];
-    return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
-  });
-  vi.stubGlobal('fetch', fetchMock);
-  return fetchMock;
+const CATALOG_PATH = '/api/pokemon';
+const SYNC_STATUS_PATH = '/api/pokemon/sync-status';
+
+/** Answers each endpoint with its responses in order; the last one repeats. */
+const mockApi = (catalog: Pokemon[][], syncStates: CatalogSyncState[] = ['running']) => {
+  const calls = { [CATALOG_PATH]: 0, [SYNC_STATUS_PATH]: 0 };
+  const next = <T,>(responses: T[], path: keyof typeof calls) =>
+    responses[Math.min(calls[path]++, responses.length - 1)];
+
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (request: Request) => {
+      const path = new URL(request.url).pathname;
+      const body =
+        path === SYNC_STATUS_PATH ? { state: next(syncStates, SYNC_STATUS_PATH) } : next(catalog, CATALOG_PATH);
+      return new Response(JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
+    }),
+  );
+  return calls;
 };
 
 /** Node's Request cannot parse the relative API paths the browser resolves against the page origin. */
@@ -50,17 +61,18 @@ describe('useCatalog', () => {
   });
 
   it('does not poll a loaded catalog, so an idle session can expire', async () => {
-    const fetchMock = mockCatalogResponses([pikachu]);
+    const calls = mockApi([[pikachu]]);
     const { result } = renderCatalog();
     await waitFor(() => expect(result.current.data).toEqual([pikachu]));
 
     await act(() => vi.advanceTimersByTimeAsync(3 * CATALOG_SYNC_POLLING_MS));
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(calls[CATALOG_PATH]).toBe(1);
+    expect(calls[SYNC_STATUS_PATH]).toBe(0);
   });
 
   it('polls while the initial sync is running and stops once the catalog is filled', async () => {
-    const fetchMock = mockCatalogResponses([], [pikachu]);
+    const calls = mockApi([[], [pikachu]]);
     const { result } = renderCatalog();
     await waitFor(() => expect(result.current.data).toEqual([]));
 
@@ -68,6 +80,18 @@ describe('useCatalog', () => {
     await waitFor(() => expect(result.current.data).toEqual([pikachu]));
 
     await act(() => vi.advanceTimersByTimeAsync(3 * CATALOG_SYNC_POLLING_MS));
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(calls[CATALOG_PATH]).toBe(2);
+    expect(result.current.syncFailed).toBe(false);
+  });
+
+  it('reports a failed sync while the catalog is empty and recovers once the backend retry loaded it', async () => {
+    mockApi([[], [], [pikachu]], ['failed', 'failed', 'idle']);
+    const { result } = renderCatalog();
+
+    await waitFor(() => expect(result.current.syncFailed).toBe(true));
+
+    await act(() => vi.advanceTimersByTimeAsync(2 * CATALOG_SYNC_POLLING_MS));
+    await waitFor(() => expect(result.current.data).toEqual([pikachu]));
+    expect(result.current.syncFailed).toBe(false);
   });
 });

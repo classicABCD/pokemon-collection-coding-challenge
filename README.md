@@ -18,7 +18,8 @@ docker compose up --build
 Open **http://localhost:3000** and register a trainer.
 
 - On the first start the backend loads ~1,350 Pokémon from [PokéAPI](https://pokeapi.co) in the background (about a
-  minute). The catalog fills automatically; the app is usable during the sync.
+  minute). The catalog fills automatically; the app is usable during the sync. If PokéAPI is unreachable, the catalog
+  page says so and the backend retries every minute until the catalog is loaded.
 - Afterwards all data comes from the local database; the app also works while PokéAPI is unavailable.
 - Stop with `docker compose down`. Data is kept in a Docker volume; `docker compose down -v` removes it.
 - Start with `APP_PORT=8081 docker compose up --build` to specify your own port.

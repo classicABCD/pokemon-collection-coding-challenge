@@ -9,11 +9,17 @@ import { PokemonGrid } from '../../features/pokemon/PokemonGrid';
 import { NO_MATCH_MESSAGE } from '../../features/pokemon/pokemon.const';
 import { availableTypes, filterAndSortPokemon } from '../../features/pokemon/pokemonFilter.util';
 import { usePokemonFilter } from '../../features/pokemon/usePokemonFilter.hook';
-import { CATALOG_DEFAULT_SORT, CATALOG_LOADING_MESSAGE, CATALOG_SORT_OPTIONS, NO_POKEMON } from './catalogPage.const';
+import {
+  CATALOG_DEFAULT_SORT,
+  CATALOG_LOADING_MESSAGE,
+  CATALOG_SORT_OPTIONS,
+  CATALOG_SYNC_FAILED_MESSAGE,
+  NO_POKEMON,
+} from './catalogPage.const';
 import { useCatalog } from './useCatalog.hook';
 
 export const CatalogPage = () => {
-  const { data: catalog = NO_POKEMON, isLoading, error } = useCatalog();
+  const { data: catalog = NO_POKEMON, isLoading, error, syncFailed } = useCatalog();
   const { data: collection } = useListCollectionQuery();
   const [addToCollection, addState] = useAddToCollectionMutation();
   const [filter, updateFilter] = usePokemonFilter(CATALOG_DEFAULT_SORT);
@@ -44,13 +50,17 @@ export const CatalogPage = () => {
       {error && <Alert color="red">{errorMessage(error)}</Alert>}
 
       {!error && catalog.length === 0 ? (
-        // First sync still running after startup; polling picks up the data once it is there
-        <Center py="xl">
-          <Group>
-            <Loader size="sm" />
-            <Text c="dimmed">{CATALOG_LOADING_MESSAGE}</Text>
-          </Group>
-        </Center>
+        // Initial sync running or retried by the backend; polling picks up the data once it is there
+        syncFailed ? (
+          <Alert color="yellow">{CATALOG_SYNC_FAILED_MESSAGE}</Alert>
+        ) : (
+          <Center py="xl">
+            <Group>
+              <Loader size="sm" />
+              <Text c="dimmed">{CATALOG_LOADING_MESSAGE}</Text>
+            </Group>
+          </Center>
+        )
       ) : (
         <>
           <PokemonFilterBar

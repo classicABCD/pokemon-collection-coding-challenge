@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +26,7 @@ import org.springframework.test.context.DynamicPropertySource;
 /**
  * Sync against a stubbed PokéAPI: initial load, outage and deprecation.
  */
-@SpringBootTest(properties = "app.catalog.sync.sync-on-startup=false")
+@SpringBootTest(properties = "app.catalog.sync.initial-sync=false")
 @Import(TestcontainersConfiguration.class)
 class CatalogSyncIntegrationTest {
 
@@ -81,6 +82,35 @@ class CatalogSyncIntegrationTest {
         sync.run();
 
         assertThat(count("deprecated = false")).isEqualTo(20);
+    }
+
+    @Test
+    void syncStateReportsFailureUntilPokeApiIsReachableAgain() {
+        pokeApi.stubFor(
+                get(urlPathEqualTo("/api/v2/pokemon")).willReturn(aResponse().withStatus(503)));
+        sync.run();
+
+        assertThat(sync.state()).isEqualTo(CatalogSync.State.FAILED);
+        assertThat(count("true")).isZero();
+
+        pokeApi.resetAll();
+        stubPokeApi(1, 20);
+        sync.run();
+
+        assertThat(sync.state()).isEqualTo(CatalogSync.State.IDLE);
+        assertThat(count("true")).isEqualTo(20);
+    }
+
+    @Test
+    void failingDetailRequestsForEveryPokemonCountAsFailedSync() {
+        stubPokeApi(1, 20);
+        pokeApi.stubFor(get(urlPathMatching("/api/v2/pokemon/\\d+"))
+                .atPriority(1)
+                .willReturn(aResponse().withStatus(500)));
+
+        sync.run();
+
+        assertThat(sync.state()).isEqualTo(CatalogSync.State.FAILED);
     }
 
     @Test

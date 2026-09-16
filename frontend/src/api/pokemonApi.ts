@@ -32,6 +32,7 @@ export const pokemonApi = generatedApi.enhanceEndpoints({
 
 export const {
   useAddToCollectionMutation,
+  useGetCatalogSyncStatusQuery,
   useGetCurrentTrainerQuery,
   useListCollectionQuery,
   useListPokemonQuery,
@@ -40,4 +41,4 @@ export const {
   useRegisterMutation,
 } = pokemonApi;
 
-export type { CollectionEntry, LoginRequest, Pokemon, Trainer } from './generated';
+export type { CatalogSyncState, CollectionEntry, LoginRequest, Pokemon, Trainer } from './generated';
