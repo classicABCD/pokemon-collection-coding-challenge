@@ -1,6 +1,6 @@
 # Pokémon Collection
 
-[![CI](https://github.com/classicABCD/mercedes-coding-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/classicABCD/mercedes-coding-challenge/actions/workflows/ci.yml)
+[![CI](https://github.com/classicABCD/pokemon-collection-coding-challenge/actions/workflows/ci.yml/badge.svg)](https://github.com/classicABCD/pokemon-collection-coding-challenge/actions/workflows/ci.yml)
 
 Full-stack application in which trainers manage their personal Pokémon collection.
 
